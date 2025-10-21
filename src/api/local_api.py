@@ -5,9 +5,16 @@ import time
 import json
 import os
 from http.client import responses
+import webbrowser
+from settings import ONLY_ANSWER, DEFAULT_MODEL
 
 HOME = Path(__file__).parent
-MODELS = os.listdir(r"..\..\models")
+MODELS = os.listdir(Path(HOME, r"..\..\models"))
+
+
+def moving_dots(n: int, N: int) -> str:
+    s = "." * n
+    return s.ljust(N)
 
 
 def launch_server(model_name: str, port: int = 8080, verbose: bool = False):
@@ -30,14 +37,20 @@ def launch_server(model_name: str, port: int = 8080, verbose: bool = False):
     server = subprocess.Popen(cmd, **kwargs)
     host = f"http://localhost:{port}"
     r = requests.get(host)
+    n = 0
+    n_dots = 5
     while r.status_code == 503:
         time.sleep(1)
         r = requests.get(host)
+
         print(
-            f"Status code {r.status_code} ({responses[r.status_code]})... on localhost:{port} model: {model_name}",
+            f"Status code {r.status_code} ({responses[r.status_code]}){moving_dots(n,n_dots)} on localhost:{port} model: {model_name}",
             end="\r",
         )
+        n = (n + 1) % n_dots
     print("\n")
+    print(f"Opening {host}")
+    webbrowser.open(host)
 
 
 def prompt(
@@ -71,5 +84,5 @@ def rcontent(res: requests.Response) -> dict:
 
 
 if __name__ == "__main__":
-    model_name = "LFM2-8B-A1B-Q8_0.gguf"
+    model_name = DEFAULT_MODEL
     launch_server(model_name)
