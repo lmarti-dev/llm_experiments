@@ -6,7 +6,6 @@ import json
 import os
 from http.client import responses
 import webbrowser
-from settings import ONLY_ANSWER, DEFAULT_MODEL
 
 HOME = Path(__file__).parent
 MODELS = os.listdir(Path(HOME, r"..\..\models"))
@@ -17,18 +16,29 @@ def moving_dots(n: int, N: int) -> str:
     return s.ljust(N)
 
 
-def launch_server(model_name: str, port: int = 8080, verbose: bool = False):
+def model_fpath(model_name: str) -> Path:
+    return Path(HOME, rf"..\..\models\{model_name}").absolute()
+
+
+def launch_server(
+    model_name: str,
+    port: int = 8080,
+    verbose: bool = False,
+    open_browser: bool = True,
+    ctx: int = int(2**13),
+    multimodal: bool = True,
+):
     exe = Path(HOME, r"..\..\bin\llama-b6779-bin-win-cuda-12.4-x64\llama-server.exe")
-    print(f"Calling {exe}")
 
-    if model_name is None:
-        model_name = "SmolLM2-360M-Q2_K.gguf"
+    model = model_fpath(model_name)
 
-    model = Path(HOME, rf"..\..\models\{model_name}").absolute()
-    print(f"Loading model at {model}")
+    if multimodal:
+        mc = "-hf"
+    else:
+        mc = "-m"
+    cmd = f"{exe} {mc} {model} --port {port} --offline -c {ctx}"
 
-    cmd = f"{exe} -m {model} --port {port}"
-
+    print(cmd)
     if verbose:
         kwargs = {"stdout": subprocess.PIPE}
     else:
@@ -40,7 +50,7 @@ def launch_server(model_name: str, port: int = 8080, verbose: bool = False):
     n = 0
     n_dots = 5
     while r.status_code == 503:
-        time.sleep(1)
+        time.sleep(0.2)
         r = requests.get(host)
 
         print(
@@ -49,8 +59,9 @@ def launch_server(model_name: str, port: int = 8080, verbose: bool = False):
         )
         n = (n + 1) % n_dots
     print("\n")
-    print(f"Opening {host}")
-    webbrowser.open(host)
+    if open_browser:
+        print(f"Opening {host}")
+        webbrowser.open(host)
 
 
 def prompt(
@@ -84,5 +95,13 @@ def rcontent(res: requests.Response) -> dict:
 
 
 if __name__ == "__main__":
-    model_name = DEFAULT_MODEL
+
+    available_models = os.listdir(Path(HOME, "../../models"))
+    for ind, m in enumerate(available_models):
+        print(f"[{ind}] - {m}")
+
+    num = input("Please pick the model's number: ")
+
+    model_name = available_models[int(num)]
+
     launch_server(model_name)
