@@ -26,17 +26,11 @@ def launch_server(
     verbose: bool = False,
     open_browser: bool = True,
     ctx: int = int(2**13),
-    multimodal: bool = True,
 ):
-    exe = Path(HOME, r"..\..\bin\llama-b6779-bin-win-cuda-12.4-x64\llama-server.exe")
+    exe = Path(HOME, r"..\..\bin\llama-b7058-bin-win-cuda-12.4-x64\llama-server.exe")
 
     model = model_fpath(model_name)
-
-    if multimodal:
-        mc = "-hf"
-    else:
-        mc = "-m"
-    cmd = f"{exe} {mc} {model} --port {port} --offline -c {ctx}"
+    cmd = f"{exe} -m {model} --port {port} --offline -c {ctx}"
 
     print(cmd)
     if verbose:
