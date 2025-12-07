@@ -3,14 +3,13 @@ import subprocess
 from pathlib import Path
 import time
 import json
-import os
 from http.client import responses
 import io
-from pygguf import image_to_url, process_image
+from pygguf.api.img_utils import image_to_url, process_image
 import webbrowser
 
 
-from settings import LLAMAEXE, MODELS, HOME
+from pygguf.api.settings import LLAMAEXE, MODELS, HOME, DATA_PATH
 
 
 OAI_ENDPOINT = "/v1/chat/completions"
@@ -37,11 +36,7 @@ def moving_dots(n: int, N: int) -> str:
 
 
 def model_fpath(model_name: str) -> Path:
-    return Path(HOME, rf"..\..\models\{model_name}").absolute()
-
-
-def grammar_fpath(grammar_name: str) -> Path:
-    return Path(HOME, rf"..\..\grammars\{grammar_name}").absolute()
+    return Path(DATA_PATH, rf"models\{model_name}").absolute()
 
 
 def launch_server(
