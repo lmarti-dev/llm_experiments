@@ -1,0 +1,11 @@
+[project]
+name = "pygguf"
+version = "0.2.0"
+requires-python = ">=3.10"
+dependencies = [
+"certifi==2025.11.12",
+"charset-normalizer==3.4.4",
+"idna==3.11",
+"requests==2.32.5",
+"urllib3==2.5.0"
+]

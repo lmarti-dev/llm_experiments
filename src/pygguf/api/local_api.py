@@ -6,11 +6,11 @@ import json
 import os
 from http.client import responses
 import io
-from img_utils import image_to_url, process_image
+from pygguf import image_to_url, process_image
 import webbrowser
 
-HOME = Path(__file__).parent
-MODELS = os.listdir(Path(HOME, r"..\..\models"))
+
+from settings import LLAMAEXE, MODELS, HOME
 
 
 OAI_ENDPOINT = "/v1/chat/completions"
@@ -44,10 +44,6 @@ def grammar_fpath(grammar_name: str) -> Path:
     return Path(HOME, rf"..\..\grammars\{grammar_name}").absolute()
 
 
-def llamaexe():
-    return Path(HOME, r"..\..\bin\llama-b7058-bin-win-cuda-12.4-x64\llama-server.exe")
-
-
 def launch_server(
     port: int = 8080,
     ctx: int = int(2**13),
@@ -55,7 +51,7 @@ def launch_server(
     model_name: str = "gemma",
     open_browser: bool = False,
 ):
-    exe = llamaexe()
+    exe = LLAMAEXE
 
     if verbose:
         kwargs = {"stdout": subprocess.PIPE}
@@ -213,3 +209,19 @@ def kill_server():
     print(cmd)
     subprocess.Popen(cmd)
     print("Killed the llama")
+
+
+if __name__ == "__main__":
+    try:
+
+        available_models = [m for m in MODELS]
+        for ind, m in enumerate(available_models):
+            print(f"[{ind}] - {m}")
+
+        num = input("Please pick the model's number: ")
+
+        model_name = available_models[int(num)]
+        launch_server(model_name=model_name, open_browser=True)
+        open_for_kill()
+    finally:
+        kill_server()
